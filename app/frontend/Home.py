@@ -64,10 +64,20 @@ def _format_sources(sources: list[dict]) -> str:
     return "\n".join(lines)
 
 
+# ── Constants ─────────────────────────────────────────────────────────────────
+
+SUGGESTED_QUESTIONS = [
+    "What drives demand according to these materials?",
+    "Are there conflicting data points across documents?",
+    "Summarize key trends shown in the documents",
+]
+
 # ── Session state ─────────────────────────────────────────────────────────────
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "pending_prompt" not in st.session_state:
+    st.session_state.pending_prompt = None
 
 
 # ── Header ────────────────────────────────────────────────────────────────────
@@ -117,9 +127,25 @@ for msg in st.session_state.messages:
                 st.markdown(_format_sources(msg["sources"]))
 
 
-# ── Chat input ────────────────────────────────────────────────────────────────
+# ── Suggested questions (shown only when chat is empty) ───────────────────────
 
-if prompt := st.chat_input("Ask a question about your documents…"):
+if not st.session_state.messages:
+    st.markdown("#### Try a question")
+    cols = st.columns(len(SUGGESTED_QUESTIONS))
+    for col, question in zip(cols, SUGGESTED_QUESTIONS):
+        with col:
+            if st.button(question, use_container_width=True):
+                st.session_state.pending_prompt = question
+                st.rerun()
+
+
+# ── Chat input + prompt dispatch ──────────────────────────────────────────────
+
+# Resolve prompt: typed input takes priority; suggestion button is fallback.
+typed = st.chat_input("Ask a question about your documents…")
+prompt = typed or st.session_state.pop("pending_prompt", None)
+
+if prompt:
     # Display user message
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
