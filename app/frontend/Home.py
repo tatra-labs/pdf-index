@@ -30,11 +30,19 @@ st.set_page_config(
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+_CHAT_TIMEOUT = httpx.Timeout(connect=10.0, read=300.0, write=30.0, pool=10.0)
+
+
 def _api_post(path: str, payload: dict) -> dict | None:
     try:
-        r = httpx.post(f"{API_BASE}{path}", json=payload, timeout=120)
+        r = httpx.post(f"{API_BASE}{path}", json=payload, timeout=_CHAT_TIMEOUT)
         r.raise_for_status()
         return r.json()
+    except httpx.ReadTimeout:
+        st.error(
+            "The request timed out (>5 min). "
+            "PageIndex may still be processing — please try again in a moment."
+        )
     except httpx.HTTPStatusError as e:
         st.error(f"API error {e.response.status_code}: {e.response.text}")
     except httpx.ConnectError:
