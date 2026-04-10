@@ -1,0 +1,11 @@
+anthropic>=0.49.0
+pageindex           # cloud SDK: submit_document / get_document / chat_completions
+fastapi>=0.115.0
+uvicorn>=0.32.0
+streamlit>=1.40.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+python-dotenv>=1.1.0
+python-multipart>=0.0.20
+requests>=2.32.0
+httpx>=0.27.0
