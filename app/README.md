@@ -5,6 +5,19 @@ Ask natural-language questions over multiple PDFs and receive grounded answers w
 
 ---
 
+## Demo
+
+**▶ [Watch the full walkthrough on Google Drive](https://drive.google.com/file/d/1DFUt7ztd3vNtsoZxRgDHr8HCb2aQKnAr/view?usp=sharing)**  
+The video shows document ingestion, status tracking, and live question-answering with citations across multiple investment documents.
+
+### Chat interface
+
+![Landing page — chat interface with suggested questions](assets/imgs/landing_page.png)
+
+The chat page opens with three suggested questions. Once a conversation starts the suggestions disappear and the standard chat input takes over. Each assistant response includes a collapsible **Sources** panel listing the document name and page range for every retrieved passage.
+
+---
+
 ## Table of Contents
 
 1. [System Architecture](#system-architecture)
@@ -270,6 +283,19 @@ The current system is a single-server proof of concept. Here is how each layer s
 **Bottleneck today:** the RAG query is synchronous and can take 30–120 seconds.
 The immediate fix is streaming the response (FastAPI SSE + `st.write_stream` in Streamlit),
 which lets the user read the answer as it arrives rather than waiting for the full response.
+
+### PageIndex credit consumption
+
+PageIndex charges per page indexed and per chat API call. The screenshot below shows actual usage from building and testing this system:
+
+![PageIndex API credit usage dashboard](assets/imgs/pageindex_api_usage.png)
+
+Key observations:
+- **Indexing**: charged per page processed (`pages x152`, `pages x37`). A 150-page report costs ~152 credits to index.
+- **Chat**: charged per query (`chatAPI in=14 out=4956 = -9 credits`). Each multi-document query costs 4–9 credits depending on tokens retrieved.
+- The free tier includes 200 credits — enough to index ~2–3 medium documents and run ~15–20 queries for evaluation purposes.
+
+**Implication at scale:** for production use with many documents and frequent queries, a paid PageIndex plan is required. Caching repeated queries and scoping retrieval to only relevant documents (rather than all indexed docs) are the primary levers for reducing credit spend.
 
 ---
 
