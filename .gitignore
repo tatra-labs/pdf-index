@@ -1,0 +1,10 @@
+PageIndex/
+
+.claude
+.env
+/venv/
+*/.venv/
+
+__pycache__
+
+app/data/uploads
